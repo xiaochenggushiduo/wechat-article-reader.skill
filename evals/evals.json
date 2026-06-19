@@ -1,0 +1,43 @@
+{
+  "skill_name": "wechat-article-reader",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "我有一篇微信公众号文章需要提取内容，链接是 https://mp.weixin.qq.com/s?__biz=Mzg3NTE4NzQyNA==&mid=2247496650&idx=1&sn=33afa4ece9afbbb6c3f6d9ea244f051a 。请帮我把文章内容提取出来，保存到本地文件。",
+      "expected_output": "成功读取微信文章，保存文章内容（标题、作者、正文）到本地文本文件",
+      "files": [],
+      "expectations": [
+        "脚本成功读取了微信文章并返回了内容",
+        "输出的结果包含文章标题",
+        "输出的结果包含文章作者",
+        "输出的结果包含文章正文（content 字段不为空）",
+        "文章内容被保存到本地 .txt 文件",
+        "读取过程中使用了 wechat-reader（Playwright + 真实浏览器）而非直接 HTTP 请求"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "帮我读一下这篇微信公众号文章：https://mp.weixin.qq.com/s/abcdef123456789 。如果遇到验证码，请提示我手动在浏览器中完成验证。",
+      "expected_output": "启动 wechat-reader 打开浏览器，处理验证码拦截，返回文章内容或明确的状态提示",
+      "files": [],
+      "expectations": [
+        "调用了 wechat-reader 的 read_article_sync 函数",
+        "设置 wait_for_manual_verify 参数以支持手动验证",
+        "正确处理了可能的验证码状态并给出用户提示",
+        "输出包含文章的状态信息（status、title 等）"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "我有多个微信公众号链接需要批量提取文章：https://mp.weixin.qq.com/s/abcdef123456789 和 https://mp.weixin.qq.com/s?__biz=TEST==&mid=123&idx=1&sn=abc 。请帮我逐一提取这些文章。",
+      "expected_output": "逐篇读取微信文章，返回每篇文章的标题和内容摘要",
+      "files": [],
+      "expectations": [
+        "逐一处理每篇文章链接",
+        "每篇文章都使用 wechat-reader 进行读取",
+        "输出中包含每篇文章的标题",
+        "处理完所有文章后才结束"
+      ]
+    }
+  ]
+}
