@@ -31,6 +31,8 @@ LANG_PATTERNS = {
     "Python": [
         r"import \w+", r"from \w+ import", r"def \w+\(.*\)",
         r"class \w+", r"if __name__", r"print\(f",
+        r"^PYTHON$", r"plt\.", r"sns\.", r"pd\.", r"np\.",
+        r"sklearn\.", r"warnings\.", r"StandardScaler",
     ],
 }
 
@@ -47,8 +49,14 @@ def detect_language(lines: list[str]) -> str:
 
 SECTION_HEADER = re.compile(r"^#{3,}\s*[-=]+\s*$|^#{3,}\s*第.{1,4}部分|^#{3,}\s*(?:步骤|Step)\s*\d+|^#{3,}\s*(?:Part|Section)\s*\d+", re.I)
 NUMBERED_LIST = re.compile(r"^\d{1,2}\.[\u4e00-\u9fffA-Za-z]")
-PROMO_KEYWORDS = ["粉丝群", "公众号", "视频号", "联系作者", "可加我", "扫码", "付费合集", "课程上线"]
-CODE_MARKER = re.compile(r"(?:\w+\s*(?:<-|=)\s*)?function\b|library\(|import\s|^#{3,}\s*=")
+PROMO_KEYWORDS = ["粉丝群", "视频号", "联系作者", "可加我", "扫码", "付费合集", "课程上线"]
+CODE_MARKER = re.compile(
+    r"(?:\w+\s*(?:<-|=)\s*)?function\b|library\(|"
+    r"^import\s|^from\s+\w+\s+import|^def\s+\w+|^class\s+\w+|^print\(|"
+    r"^\w+\s*=\s*(?:pd\.|np\.|plt\.|sns\.)|"
+    r"^#{3,}\s*=|^PYTHON$|^R$",
+    re.M
+)
 
 
 def is_code_section_line(line: str) -> bool:
@@ -60,15 +68,30 @@ def is_code_section_line(line: str) -> bool:
         return True
     if stripped.startswith("#"):
         return True
-    if re.search(r"[\u4e00-\u9fff]", stripped):
+    # Separate code from inline comment (e.g. `import numpy  # 注释`)
+    code_part = stripped.split("#")[0].strip()
+    # Only check the code-part for Chinese characters
+    if re.search(r"[\u4e00-\u9fff]", code_part):
         return False
     return True
 
 
 def is_promo_section(lines: list[str], idx: int) -> bool:
-    """Check if current position is in the promotion/ad section."""
-    window = " ".join(lines[idx:idx+5])
-    return any(kw in window for kw in PROMO_KEYWORDS)
+    """Check if current position is in the promotion/ad section.
+    Only triggers when keywords appear in Chinese prose, not inside code/strings.
+    """
+    window = []
+    for j in range(idx, min(idx + 5, len(lines))):
+        s = lines[j].strip()
+        if not s:
+            continue
+        # Skip lines that look like code (only check pure Chinese prose)
+        code_part = s.split("#")[0].strip()
+        has_chinese = bool(re.search(r"[\u4e00-\u9fff]", code_part))
+        if has_chinese:
+            window.append(s)
+    text = " ".join(window)
+    return any(kw in text for kw in PROMO_KEYWORDS)
 
 
 def is_numbered_method_list(lines: list[str], idx: int) -> bool:
@@ -127,6 +150,16 @@ def sanitize_filename(name: str) -> str:
     return re.sub(r'[\\/:*?"<>|]', "_", name).strip("._ ")[:80]
 
 
+def safe_print(text: str):
+    """Print text safely on Windows consoles with GBK encoding."""
+    cleaned = text.replace("\xa0", " ")
+    try:
+        print(cleaned)
+    except UnicodeEncodeError:
+        cleaned = cleaned.encode("gbk", errors="replace").decode("gbk", errors="replace")
+        print(cleaned)
+
+
 def parse_args():
     parser = argparse.ArgumentParser(description="Extract code from WeChat article")
     parser.add_argument("url", help="WeChat article URL")
@@ -142,22 +175,22 @@ def main():
     try:
         from wechat_reader import read_article_sync
     except ImportError:
-        print("ERROR: wechat_reader not installed. Run python scripts/setup.py first.")
+        safe_print("ERROR: wechat_reader not installed. Run python scripts/setup.py first.")
         sys.exit(1)
 
-    print(f"Reading article: {args.url[:80]}...")
-    print()
-    print("A Chrome browser will open. If a captcha appears,")
-    print("please complete the verification in the browser window.")
-    print(f"The script will wait up to {args.timeout} seconds.")
-    print()
+    safe_print(f"Reading article: {args.url[:80]}...")
+    safe_print("")
+    safe_print("A Chrome browser will open. If a captcha appears,")
+    safe_print("please complete the verification in the browser window.")
+    safe_print(f"The script will wait up to {args.timeout} seconds.")
+    safe_print("")
 
     result = read_article_sync(args.url, strategy=args.strategy, wait_for_manual_verify=args.timeout, timeout=30)
 
-    print(f"\nStatus: {result.status}")
+    safe_print(f"\nStatus: {result.status}")
 
     if result.status != "ok" or not result.content:
-        print(f"Hint: {result.hint}" if result.hint else f"No content. Status: {result.status}")
+        safe_print(f"Hint: {result.hint}" if result.hint else f"No content. Status: {result.status}")
         return
 
     # Extract code
@@ -168,16 +201,16 @@ def main():
         code = result.content
         lang = "Unknown"
 
-    print(f"Article: {result.title}")
-    print(f"Author: {result.author}")
-    print(f"Language: {lang}")
-    print(f"Code length: {len(code)} chars ({len(code.splitlines())} lines)")
+    safe_print(f"Article: {result.title}")
+    safe_print(f"Author: {result.author}")
+    safe_print(f"Language: {lang}")
+    safe_print(f"Code length: {len(code)} chars ({len(code.splitlines())} lines)")
 
     # Save code to temp/default file; AI will rename it after analysis
     output_path = args.output or "wechat_code_extracted.txt"
     with open(output_path, "w", encoding="utf-8") as f:
         f.write(code)
-    print(f"\nSaved code to: {output_path}")
+    safe_print(f"\nSaved code to: {output_path}")
 
     # Save metadata
     meta = {
@@ -194,22 +227,22 @@ def main():
     meta_path = Path(output_path).with_suffix(".json")
     with open(meta_path, "w", encoding="utf-8") as f:
         json.dump(meta, f, ensure_ascii=False, indent=2)
-    print(f"Saved metadata to: {meta_path}")
+    safe_print(f"Saved metadata to: {meta_path}")
 
     # Save raw if requested
     if args.raw:
         raw_path = Path(output_path).with_suffix(".raw.txt")
         with open(raw_path, "w", encoding="utf-8") as f:
             f.write(result.content)
-        print(f"Saved raw article to: {raw_path}")
+        safe_print(f"Saved raw article to: {raw_path}")
 
-    print("\n--- First 10 lines ---")
+    safe_print("\n--- First 10 lines ---")
     for line in code.split("\n")[:10]:
-        print(line)
+        safe_print(line)
 
-    print(f"\n=== NEXT STEP: Read the saved code file, analyze its content to")
-    print(f"    identify key functions/packages/algorithms, then compose a")
-    print(f"    keyword-based filename and rename the .txt file accordingly. ===")
+    safe_print("\n=== NEXT STEP: Read the saved code file, analyze its content to")
+    safe_print("    identify key functions/packages/algorithms, then compose a")
+    safe_print("    keyword-based filename and rename the .txt file accordingly. ===")
 
 
 if __name__ == "__main__":

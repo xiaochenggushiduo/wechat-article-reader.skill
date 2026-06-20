@@ -1,0 +1,32 @@
+{
+  "source_url": "https://mp.weixin.qq.com/s/TxRMCKhszG1RaX-mhoQUjg",
+  "article_title": "机器学习——13种机器学习模型+贝叶斯优化超参数+ROC曲线+校准曲线+LightGBM的SHAP高级解释",
+  "author": "Python机器学习ML",
+  "account_name": "Python机器学习ML",
+  "publish_time": "2025年8月1日 00:00",
+  "fetched_at": "2026-06-20T00:00:36.778156+00:00",
+  "language": "Python",
+  "code_lines": 1852,
+  "code_file": "13MLModels-BayesianOptimization-ROC-Calibration-LightGBM-SHAP-Diabetes.txt",
+  "keywords": [
+    "13MLModels",
+    "BayesianOptimization",
+    "skopt",
+    "BayesSearchCV",
+    "ROC-AUC",
+    "CalibrationCurve",
+    "LightGBM",
+    "SHAP",
+    "DiabetesDiagnosis",
+    "RandomForest",
+    "XGBoost",
+    "SVC",
+    "LogisticRegression",
+    "GradientBoosting",
+    "KNN",
+    "DecisionTree",
+    "ExtraTrees",
+    "GaussianNB",
+    "LDA"
+  ]
+}

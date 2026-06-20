@@ -1,0 +1,1852 @@
+PYTHON
+
+import numpy as np  # 导入NumPy库，用于进行高效的数值计算，特别是数组操作，通常简写为np。
+import pandas as pd # 导入Pandas库，用于数据处理和分析，提供了DataFrame这一强大的数据结构，通常简写为pd。
+import matplotlib.pyplot as plt # 导入Matplotlib的pyplot模块，是Python中最基础的绘图库，通常简写为plt。
+import seaborn as sns # 导入Seaborn库，它基于Matplotlib，提供了更高级、更美观的统计图表，通常简写为sns。
+import warnings # 导入warnings模块，用于控制警告信息的输出。
+from scipy import stats # 从SciPy库中导入stats模块，它包含了大量的统计函数和检验方法。
+from sklearn.preprocessing import StandardScaler # 从Scikit-learn库中导入StandardScaler，用于数据标准化处理。
+import plotly.express as px # 导入Plotly Express库，用于创建交互式图表，通常简写为px。
+import plotly.graph_objects as go # 导入Plotly的graph_objects模块，用于构建更复杂的自定义交互式图表。
+from plotly.subplots import make_subplots # 从Plotly中导入make_subplots，用于创建包含多个子图的交互式图表。
+
+# 忽略警告
+warnings.filterwarnings('ignore') # 设置警告过滤器，'ignore'参数表示忽略所有警告信息，让输出更整洁。
+
+# 设置绘图风格 (移除中文字体设置)
+sns.set_style("whitegrid") # 使用Seaborn设置图表的默认风格为"whitegrid"，即带有白色网格背景的样式。
+sns.set_palette("husl") # 使用Seaborn设置图表的默认调色板为"husl"，提供了一套颜色鲜艳且分布均匀的色彩方案。
+
+# 数据加载
+
+
+print("=" * 60) # 打印60个等号，作为报告标题的装饰线。
+
+print("=" * 60) # 再次打印60个等号，作为报告标题的装饰线。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+PYTHON
+
+# ==================== 第一部分：数据基本信息 ====================
+
+print("-" * 40) # 打印40个短横线，作为分隔符。
+
+
+
+
+
+print(data.info()) # 调用DataFrame的info()方法，它会打印出一个简洁的摘要，包括索引类型、列名、非空值数量和内存使用情况。
+
+
+print(data.head()) # 调用head()方法，默认显示DataFrame的前5行，用于快速预览数据内容。
+
+
+missing_values = data.isnull().sum() # data.isnull()将每个单元格的值转为True（如果是缺失值）或False。.sum()会按列求和，计算每列的缺失值总数。
+print(missing_values) # 打印每列的缺失值数量。
+if missing_values.sum() == 0: # 检查所有列的缺失值总和是否为0。
+
+else: # 否则
+
+
+
+print(data.dtypes.value_counts()) # data.dtypes返回每列的数据类型。.value_counts()统计这些数据类型出现的次数。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+PYTHON
+
+# ==================== 第二部分：目标变量分析 ====================
+
+print("-" * 40) # 打印分隔符。
+
+# 目标变量分布
+target_counts = data['Diagnosis'].value_counts() # 对'Diagnosis'列进行计数，统计每个唯一值（0和1）出现的次数。
+target_pct = data['Diagnosis'].value_counts(normalize=True) * 100# normalize=True使value_counts()返回频率而非次数，乘以100得到百分比。
+
+
+for i inrange(len(target_counts)): # 遍历目标变量的两个类别。
+
+
+
+# 可视化目标变量分布
+fig, axes = plt.subplots(1, 3, figsize=(18, 5)) # 创建一个包含1行3列的子图画布，总尺寸为18x5英寸。fig是整个画布，axes是包含3个子图对象的数组。
+
+# 柱状图
+colors = ['#2ecc71', '#e74c3c'] # 定义用于绘图的颜色列表（绿色和红色）。
+bars = axes[0].bar(['No Diabetes', 'Diabetes'], target_counts.values, color=colors, alpha=0.8) # 在第一个子图(axes[0])上绘制柱状图。x轴是类别标签，y轴是计数值。
+axes[0].set_title('Diabetes Diagnosis Distribution', fontsize=14, fontweight='bold') # 设置第一个子图的标题，并指定字体大小和粗细。
+axes[0].set_ylabel('Sample Count') # 设置第一个子图的y轴标签。
+# 添加数值标签
+for bar, count inzip(bars, target_counts.values): # 遍历每个柱子及其对应的高度值。
+    axes[0].text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 5, # 在柱子顶部的中心位置添加文本。
+str(count), ha='center', va='bottom', fontweight='bold') # 文本内容是计数值，水平居中(ha)，垂直对齐到底部(va)。
+
+# 饼图
+wedges, texts, autotexts = axes[1].pie(target_counts.values, # 在第二个子图(axes[1])上绘制饼图。
+                                       labels=['No Diabetes', 'Diabetes'], # 设置每个扇区的标签。
+                                       colors=colors, # 设置每个扇区的颜色。
+                                       autopct='%1.1f%%', # 设置扇区内显示的百分比格式。
+                                       startangle=90, # 设置饼图的起始角度为90度（从顶部开始）。
+                                       explode=(0.05, 0)) # 设置第一个扇区（No Diabetes）稍微突出显示。
+axes[1].set_title('Diabetes Diagnosis Proportion', fontsize=14, fontweight='bold') # 设置第二个子图的标题。
+
+# 环形图
+center_circle = plt.Circle((0, 0), 0.70, fc='white') # 创建一个白色圆形，半径为0.7，用于覆盖饼图中心，形成环形图效果。
+axes[2].pie(target_counts.values, labels=['No Diabetes', 'Diabetes'], colors=colors, # 在第三个子图(axes[2])上绘制饼图。
+            autopct='%1.1f%%', startangle=90, pctdistance=0.85) # pctdistance=0.85表示百分比标签距离圆心的距离。
+axes[2].add_artist(center_circle) # 将创建的白色圆形添加到子图上。
+axes[2].set_title('Diabetes Diagnosis Donut Chart', fontsize=14, fontweight='bold') # 设置第三个子图的标题。
+
+plt.tight_layout() # 自动调整子图参数，使其填充整个画布区域，避免标签重叠。
+plt.savefig('target_distribution.png', dpi=300, bbox_inches='tight') # 将生成的图表保存为PNG文件，分辨率为300dpi，bbox_inches='tight'确保所有元素都被保存。
+plt.show() # 显示图表。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+PYTHON
+
+# ==================== 第三部分：特征变量分布分析 ====================
+
+print("-" * 40) # 打印分隔符。
+
+# 获取数值特征
+numeric_features = data.select_dtypes(include=[np.number]).columns.tolist() # select_dtypes选择数据类型为数值（整数、浮点数）的列，.columns获取列名，.tolist()转为列表。
+if'Diagnosis'in numeric_features: # 检查'Diagnosis'是否在数值特征列表中。
+    numeric_features.remove('Diagnosis') # 如果在，则将其移除，因为我们想单独分析预测特征。
+
+
+
+# 统计描述
+
+print(data[numeric_features].describe().round(2)) # 对所有数值特征计算描述性统计，并使用.round(2)将结果四舍五入到小数点后两位。
+
+# 特征分布可视化
+n_features = len(numeric_features) # 获取数值特征的数量。
+n_cols = 3# 指定我们希望每行显示3个子图。
+n_rows = (n_features + n_cols - 1) // n_cols # 计算需要的行数，这是一个向上取整的技巧。
+
+fig, axes = plt.subplots(n_rows, n_cols, figsize=(15, 5 * n_rows)) # 根据计算出的行列数创建子图网格。
+axes = axes.flatten() if n_rows > 1else [axes] if n_cols == 1else axes # 将axes数组扁平化为一维数组，方便通过单个索引进行遍历。
+
+for i, feature inenumerate(numeric_features): # 遍历所有数值特征及其索引。
+# 直方图 + 密度曲线
+    sns.histplot(data[feature], kde=True, ax=axes[i], alpha=0.7) # 在对应的子图(axes[i])上绘制直方图和KDE曲线。
+    axes[i].set_title(f'{feature} Distribution', fontweight='bold') # 设置子图标题。
+    axes[i].set_xlabel(feature) # 设置子图的x轴标签。
+    axes[i].set_ylabel('Frequency') # 设置子图的y轴标签。
+
+# 添加统计信息
+    mean_val = data[feature].mean() # 计算当前特征的均值。
+    median_val = data[feature].median() # 计算当前特征的中位数。
+    axes[i].axvline(mean_val, color='red', linestyle='--', label=f'Mean: {mean_val:.2f}') # 在图上绘制一条红色的虚线代表均值。
+    axes[i].axvline(median_val, color='green', linestyle='--', label=f'Median: {median_val:.2f}') # 在图上绘制一条绿色的虚线代表中位数。
+    axes[i].legend() # 显示图例（包含了均值和中位数的标签）。
+
+# 隐藏多余的子图
+for j inrange(i + 1, len(axes)): # 遍历最后一个已绘制的子图之后的所有空子图。
+    axes[j].set_visible(False) # 将这些多余的子图隐藏起来。
+
+plt.tight_layout() # 自动调整布局。
+plt.savefig('feature_distributions.png', dpi=300, bbox_inches='tight') # 保存图表。
+plt.show() # 显示图表。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+PYTHON
+
+# ==================== 第四部分：特征与目标变量关系分析 ====================
+
+print("-" * 40) # 打印分隔符。
+
+# 按目标变量分组的特征分布对比
+fig, axes = plt.subplots(n_rows, n_cols, figsize=(15, 5 * n_rows)) # 同样，创建子图网格来展示每个特征。
+axes = axes.flatten() if n_rows > 1else [axes] if n_cols == 1else axes # 扁平化axes数组。
+
+for i, feature inenumerate(numeric_features): # 遍历所有数值特征。
+# 分组箱线图
+    sns.boxplot(data=data, x='Diagnosis', y=feature, ax=axes[i]) # 在对应子图上绘制箱线图。x轴是分组变量'Diagnosis'，y轴是数值特征'feature'。
+    axes[i].set_title(f'{feature} by Diagnosis Group', fontweight='bold') # 设置子图标题。
+    axes[i].set_xlabel('Diagnosis (0:No Diabetes, 1:Diabetes)') # 设置x轴标签，并解释0和1的含义。
+
+# 添加均值标记
+for j, diagnosis inenumerate([0, 1]): # 遍历诊断结果的两个类别（0和1）。
+        subset = data[data['Diagnosis'] == diagnosis][feature] # 筛选出对应诊断结果的子数据集。
+        mean_val = subset.mean() # 计算该子数据集的均值。
+        axes[i].plot(j, mean_val, marker='D', markersize=8, color='red') # 在箱线图上用红色菱形(D)标记出均值位置。
+
+# 隐藏多余的子图
+for j inrange(i + 1, len(axes)): # 隐藏网格中未使用的子图。
+    axes[j].set_visible(False)
+
+plt.tight_layout() # 自动调整布局。
+plt.savefig('feature_target_relationship.png', dpi=300, bbox_inches='tight') # 保存图表。
+plt.show() # 显示图表。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+PYTHON
+
+# ==================== 第五部分：相关性分析 ====================
+
+print("-" * 40) # 打印分隔符。
+
+# 计算相关性矩阵
+correlation_matrix = data[numeric_features + ['Diagnosis']].corr() # 选取所有数值特征和目标变量，调用.corr()方法计算它们之间的皮尔逊相关系数矩阵。
+
+target_corr = correlation_matrix['Diagnosis'].abs().sort_values(ascending=False) # 提取'Diagnosis'列与其他所有变量的相关系数，取绝对值，并按降序排列。
+print(target_corr[target_corr.index != 'Diagnosis']) # 打印排序后的相关性，并排除'Diagnosis'自身（与自身相关性恒为1）。
+
+# 增强版相关性热力图
+plt.figure(figsize=(12, 10)) # 创建一个12x10英寸的新画布。
+mask = np.triu(np.ones_like(correlation_matrix, dtype=bool)) # 创建一个上三角矩阵的掩码(mask)。np.ones_like创建一个与相关矩阵同样形状的全1矩阵，np.triu保留其上三角部分。
+sns.heatmap(correlation_matrix, # 绘制热力图。
+            mask=mask, # 应用掩码，只显示下三角部分（避免信息重复）。
+            annot=True, # 在每个单元格中显示数值（相关系数）。
+            fmt=".3f", # 设置数值的格式为保留三位小数的浮点数。
+            cmap='RdBu_r', # 设置颜色映射方案为'RdBu_r'（红-白-蓝，r表示反转，红色代表正相关，蓝色代表负相关）。
+            square=True, # 使每个单元格都为正方形。
+            linewidths=0.5, # 在单元格之间添加宽度为0.5的线条。
+            cbar_kws={"shrink": .8}) # 调整颜色条(cbar)的大小，使其为原始大小的80%。
+plt.title('Feature Correlation Heatmap (Lower Triangle)', fontsize=16, fontweight='bold', pad=20) # 设置图表标题。
+plt.xticks(rotation=45, ha='right') # 将x轴的标签旋转45度，并右对齐，防止重叠。
+plt.yticks(rotation=0) # 保持y轴标签不旋转。
+plt.tight_layout() # 自动调整布局。
+plt.savefig('enhanced_correlation_heatmap.png', dpi=300, bbox_inches='tight') # 保存图表。
+plt.show() # 显示图表。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+PYTHON
+
+# ==================== 第六部分：异常值检测 ====================
+
+print("-" * 40) # 打印分隔符。
+
+# 使用IQR方法检测异常值的函数
+defdetect_outliers_iqr(data, feature): # 定义一个函数，用于检测指定特征的异常值。
+    Q1 = data[feature].quantile(0.25) # 计算第一四分位数（25%）。
+    Q3 = data[feature].quantile(0.75) # 计算第三四分位数（75%）。
+    IQR = Q3 - Q1 # 计算四分位距。
+    lower_bound = Q1 - 1.5 * IQR # 定义异常值的下界。
+    upper_bound = Q3 + 1.5 * IQR # 定义异常值的上界。
+    outliers = data[(data[feature] < lower_bound) | (data[feature] > upper_bound)] # 筛选出所有低于下界或高于上界的数据点。
+return outliers, lower_bound, upper_bound # 返回包含异常值数据的DataFrame以及上下界。
+
+# 异常值统计
+outlier_summary = {} # 创建一个空字典，用于存储每个特征的异常值信息。
+for feature in numeric_features: # 遍历所有数值特征。
+    outliers, lower, upper = detect_outliers_iqr(data, feature) # 调用函数检测异常值。
+    outlier_summary[feature] = { # 将结果存入字典。
+'count': len(outliers), # 异常值的数量。
+'percentage': len(outliers) / len(data) * 100, # 异常值占总样本的百分比。
+'lower_bound': lower, # 下界。
+'upper_bound': upper # 上界。
+    }
+
+
+for feature, info in outlier_summary.items(): # 遍历字典，打印每个特征的异常值统计。
+
+
+# 异常值可视化
+fig, axes = plt.subplots(2, 1, figsize=(15, 10)) # 创建一个2行1列的子图画布。
+
+# 箱线图显示异常值
+data_melted = pd.melt(data[numeric_features], var_name='Feature', value_name='Value') # 使用melt函数将宽格式数据转换为长格式，方便用Seaborn一次性绘制所有特征的箱线图。
+sns.boxplot(data=data_melted, x='Feature', y='Value', ax=axes[0]) # 在第一个子图上绘制所有特征的箱线图。
+axes[0].set_title('Boxplot of All Features - Outlier Detection', fontweight='bold') # 设置标题。
+axes[0].tick_params(axis='x', rotation=45) # 旋转x轴标签以防重叠。
+
+# 异常值数量柱状图
+features = list(outlier_summary.keys()) # 获取特征名称列表。
+outlier_counts = [outlier_summary[f]['count'] for f in features] # 获取对应的异常值数量列表。
+bars = axes[1].bar(features, outlier_counts, alpha=0.7, color='coral') # 在第二个子图上绘制柱状图显示每个特征的异常值数量。
+axes[1].set_title('Number of Outliers by Feature', fontweight='bold') # 设置标题。
+axes[1].set_ylabel('Number of Outliers') # 设置y轴标签。
+axes[1].tick_params(axis='x', rotation=45) # 旋转x轴标签。
+
+# 添加数值标签
+for bar, count inzip(bars, outlier_counts): # 遍历每个柱子和其高度。
+    axes[1].text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 0.1, # 在柱子顶部添加数值标签。
+str(count), ha='center', va='bottom')
+
+plt.tight_layout() # 自动调整布局。
+plt.savefig('outlier_detection.png', dpi=300, bbox_inches='tight') # 保存图表。
+plt.show() # 显示图表。
+
+
+
+
+
+
+
+
+
+
+
+
+PYTHON
+
+# ==================== 第七部分：高级可视化分析 ====================
+
+print("-" * 40) # 打印分隔符。
+
+# 成对关系图 (只选择相关性较高的几个特征)
+high_corr_features = target_corr.head(6).index.tolist() # 从之前排序的相关性结果中，选择最相关的6个特征。
+if'Diagnosis'in high_corr_features: # 确保'Diagnosis'本身不在列表中。
+    high_corr_features.remove('Diagnosis') # 移除'Diagnosis'。
+high_corr_features = high_corr_features[:4] # 只保留前4个最相关的预测特征。
+
+
+
+plt.figure(figsize=(12, 10)) # 创建一个新画布。
+sns.pairplot(data[high_corr_features + ['Diagnosis']], # 使用Seaborn绘制配对图。
+             hue='Diagnosis', # 使用'Diagnosis'列对数据点进行着色，区分患病与非患病组。
+             diag_kind='kde', # 对角线上绘制核密度估计图（KDE）。
+             plot_kws={'alpha': 0.6}) # 设置散点图的透明度为0.6。
+plt.suptitle('Pairplot of Highly Correlated Features', y=1.02, fontsize=16, fontweight='bold') # 添加一个总标题，并调整其位置。
+plt.savefig('pairplot_analysis.png', dpi=300, bbox_inches='tight') # 保存图表。
+plt.show() # 显示图表。
+
+# 特征重要性可视化（基于相关性）
+plt.figure(figsize=(10, 6)) # 创建一个新画布。
+feature_importance = target_corr[target_corr.index != 'Diagnosis'].abs().sort_values(ascending=True) # 获取与目标的相关性（绝对值），并按升序排列（为了绘图时最重要的在顶部）。
+colors = ['green'if x > 0else'red'for x in correlation_matrix.loc[feature_importance.index, 'Diagnosis']] # 根据原始相关性的正负决定条形图的颜色（正为绿，负为红）。
+bars = plt.barh(range(len(feature_importance)), feature_importance.values, color=colors, alpha=0.7) # 绘制水平条形图。
+plt.yticks(range(len(feature_importance)), feature_importance.index) # 设置y轴刻度标签为特征名。
+plt.xlabel('Absolute Correlation Coefficient with Target') # 设置x轴标签。
+plt.title('Feature Importance Analysis (Based on Correlation)', fontweight='bold', fontsize=14) # 设置标题。
+plt.grid(axis='x', alpha=0.3) # 添加x轴方向的网格线。
+
+# 添加数值标签
+for i, (bar, val) inenumerate(zip(bars, feature_importance.values)): # 遍历每个条形及其值。
+    plt.text(val + 0.01, bar.get_y() + bar.get_height() / 2, # 在条形末端添加数值标签。
+f'{val:.3f}', va='center', fontweight='bold')
+
+plt.tight_layout() # 自动调整布局。
+plt.savefig('feature_importance.png', dpi=300, bbox_inches='tight') # 保存图表。
+plt.show() # 显示图表。
+
+# 分组统计分析
+
+print("-" * 40) # 打印分隔符。
+
+grouped_stats = data.groupby('Diagnosis')[numeric_features].agg(['mean', 'std', 'median']).round(3) # 按'Diagnosis'分组，对所有数值特征计算均值、标准差和中位数，并保留三位小数。
+pd.set_option('display.max_columns', None) # 设置Pandas以显示所有列，防止输出被截断。
+
+print(grouped_stats) # 打印分组统计结果。
+
+# 特征分布的violin图
+fig, axes = plt.subplots(2, 2, figsize=(15, 10)) # 创建一个2x2的子图网格。
+axes = axes.flatten() # 扁平化axes数组。
+
+top_features = high_corr_features[:4] # 选择最相关的4个特征。
+for i, feature inenumerate(top_features): # 遍历这4个特征。
+    sns.violinplot(data=data, x='Diagnosis', y=feature, ax=axes[i]) # 绘制小提琴图，它结合了箱线图和KDE图，能更好地展示数据分布的密度。
+    axes[i].set_title(f'Distribution Density of {feature}', fontweight='bold') # 设置子图标题。
+    axes[i].set_xlabel('Diagnosis (0:No Diabetes, 1:Diabetes)') # 设置x轴标签。
+
+plt.tight_layout() # 自动调整布局。
+plt.savefig('violin_plots.png', dpi=300, bbox_inches='tight') # 保存图表。
+plt.show() # 显示图表。
+
+
+
+
+
+
+
+PYTHON
+
+# ==================== 第九部分：数据质量评估 ====================
+
+print("-" * 40) # 打印分隔符。
+
+
+
+
+
+
+# 总结报告
+print("\n" + "=" * 60) # 打印分隔线。
+
+print("=" * 60) # 打印分隔线。
+
+
+
+
+print("=" * 60) # 打印分隔线。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+PYTHON
+
+# ==================== 第十部分：统计分析优化 ====================
+
+print("-" * 40) # 打印分隔符。
+
+# 选择数值特征和目标变量
+target = data['Diagnosis'] # 将目标变量'Diagnosis'存储在target变量中。
+numeric_data = data[numeric_features] # 将所有数值预测特征存储在numeric_data中。
+
+# 1. 统计显著性检验 - t检验
+
+t_test_results = {} # 创建一个空字典来存储t检验结果。
+for feature in numeric_features: # 遍历所有数值特征。
+    group_0 = numeric_data[feature][target == 0] # 筛选出非患病组的数据。
+    group_1 = numeric_data[feature][target == 1] # 筛选出患病组的数据。
+    t_stat, p_value = stats.ttest_ind(group_0, group_1) # 对两组独立样本进行t检验，返回t统计量和p值。
+    t_test_results[feature] = {'t-statistic': t_stat, 'p-value': p_value} # 将结果存入字典。
+
+# 输出t检验结果
+t_test_df = pd.DataFrame(t_test_results).T # 将结果字典转换为DataFrame并转置，使特征名为行索引。
+print(t_test_df) # 打印t检验结果表。
+
+# 2. 非参数检验 - Mann-Whitney U检验
+
+mw_test_results = {} # 创建一个空字典来存储Mann-Whitney U检验结果。
+for feature in numeric_features: # 遍历所有数值特征。
+    group_0 = numeric_data[feature][target == 0] # 筛选非患病组。
+    group_1 = numeric_data[feature][target == 1] # 筛选患病组。
+    stat, p_value = stats.mannwhitneyu(group_0, group_1) # 对两组进行Mann-Whitney U检验。
+    mw_test_results[feature] = {'U-statistic': stat, 'p-value': p_value} # 存储结果。
+
+mw_test_df = pd.DataFrame(mw_test_results).T # 转换为DataFrame并转置。
+print(mw_test_df) # 打印结果。
+
+# 3. 计算效应量
+defcompute_effect_size(group1, group2): # 定义一个函数来计算Cohen's d效应量。
+
+    diff = np.mean(group1) - np.mean(group2) # 计算两组的均值差。
+    pooled_std = np.sqrt((np.var(group1, ddof=1) + np.var(group2, ddof=1)) / 2) # 计算合并标准差。
+return diff / pooled_std # 返回效应量。
+
+
+effect_size_results = {} # 创建空字典。
+for feature in numeric_features: # 遍历特征。
+    group_0 = numeric_data[feature][target == 0] # 非患病组。
+    group_1 = numeric_data[feature][target == 1] # 患病组。
+    effect_size = compute_effect_size(group_1, group_0) # 计算效应量（患病组 vs 非患病组）。
+    effect_size_results[feature] = effect_size # 存储结果。
+
+effect_size_df = pd.DataFrame(effect_size_results, index=['Cohen\'s D']).T # 转换为DataFrame。
+print(effect_size_df) # 打印效应量结果。
+
+# 4. 多重比较校正
+from statsmodels.stats.multitest import multipletests # 从statsmodels库导入多重检验校正函数。
+
+# 获取p值并进行校正
+p_values = t_test_df['p-value'].values # 提取所有t检验的p值。
+
+# Bonferroni校正
+bonferroni_results = multipletests(p_values, method='bonferroni') # 进行Bonferroni校正。
+bonferroni_corrected = bonferroni_results[1] # 提取校正后的p值。
+
+# FDR校正 (Benjamini-Hochberg方法)
+fdr_results = multipletests(p_values, method='fdr_bh') # 进行FDR校正，这是一种更常用的方法。
+fdr_corrected = fdr_results[1] # 提取校正后的p值。
+
+# 添加校正的p值到数据框
+t_test_df['Bonferroni p-value'] = bonferroni_corrected # 将Bonferroni校正后的p值添加到结果表中。
+t_test_df['FDR p-value'] = fdr_corrected # 将FDR校正后的p值添加到结果表中。
+
+print(t_test_df) # 打印包含校正p值的完整结果表。
+
+# 5. Bootstrap置信区间计算
+
+
+defbootstrap_ci(data, statistic=np.mean, num_samples=1000, alpha=0.05): # 定义一个函数来计算bootstrap置信区间。
+
+    bootstrapped_stats = [] # 创建一个空列表来存储每次bootstrap抽样的统计量。
+for _ inrange(num_samples): # 重复抽样num_samples次。
+        sample = np.random.choice(data, size=len(data), replace=True) # 从原始数据中有放回地抽样，样本大小与原始数据相同。
+        bootstrapped_stats.append(statistic(sample)) # 计算抽样样本的统计量（默认为均值）并存储。
+    lower_bound = np.percentile(bootstrapped_stats, 100 * alpha / 2) # 计算置信区间的下界（例如，2.5%分位数）。
+    upper_bound = np.percentile(bootstrapped_stats, 100 * (1 - alpha / 2)) # 计算置信区间的上界（例如，97.5%分位数）。
+return lower_bound, upper_bound, np.mean(bootstrapped_stats) # 返回置信区间的上下界和bootstrap均值。
+
+# 创建存储Bootstrap CI的结果DataFrame
+bootstrap_results = pd.DataFrame( # 创建一个空的DataFrame来存储结果。
+    index=numeric_features,
+    columns=['Mean (0)', 'CI Lower (0)', 'CI Upper (0)', 'Mean (1)', 'CI Lower (1)', 'CI Upper (1)']
+)
+
+for feature in numeric_features: # 遍历所有数值特征。
+# 对0组(无糖尿病)计算CI
+    group_0 = numeric_data[feature][target == 0]
+    ci_low_0, ci_high_0, mean_0 = bootstrap_ci(group_0)
+
+# 对1组(有糖尿病)计算CI
+    group_1 = numeric_data[feature][target == 1]
+    ci_low_1, ci_high_1, mean_1 = bootstrap_ci(group_1)
+
+# 存储结果
+    bootstrap_results.loc[feature] = [
+        mean_0, ci_low_0, ci_high_0, mean_1, ci_low_1, ci_high_1
+    ]
+
+print(bootstrap_results) # 打印两组的bootstrap均值和95%置信区间。
+
+# 6. 可视化比较关键特征
+
+# 选择最显著的4个特征(基于效应量)
+top_features = effect_size_df.abs().sort_values('Cohen\'s D', ascending=False).index[:4].tolist() # 根据效应量的绝对值大小，选择差异最明显的4个特征。
+
+# 设置图表
+fig, axes = plt.subplots(2, 2, figsize=(16, 12)) # 创建一个2x2的子图网格。
+axes = axes.flatten() # 扁平化axes数组。
+
+for i, feature inenumerate(top_features): # 遍历这4个顶级特征。
+# 获取数据
+    group_0 = numeric_data[feature][target == 0]
+    group_1 = numeric_data[feature][target == 1]
+
+# 绘制箱线图+小提琴图
+    ax = axes[i]
+    sns.violinplot(x='Diagnosis', y=feature, data=data, ax=ax, inner=None, palette=['#2ecc71', '#e74c3c'], alpha=0.5) # 绘制半透明的小提琴图。
+    sns.boxplot(x='Diagnosis', y=feature, data=data, ax=ax, width=0.3, palette=['white', 'white']) # 在小提琴图内部绘制一个较窄的箱线图。
+    sns.stripplot(x='Diagnosis', y=feature, data=data, ax=ax, size=4, jitter=True, alpha=0.6) # 叠加散点图（stripplot）以显示每个数据点。
+
+# 添加均值和置信区间
+    ci_data = bootstrap_results.loc[feature] # 获取该特征的bootstrap结果。
+
+# 绘制均值线
+    ax.hlines(y=ci_data['Mean (0)'], xmin=-0.2, xmax=0.2, color='green', linewidth=2) # 绘制非患病组的均值线。
+    ax.hlines(y=ci_data['Mean (1)'], xmin=0.8, xmax=1.2, color='red', linewidth=2) # 绘制患病组的均值线。
+
+# 绘制置信区间
+    ax.errorbar(x=[0, 1], # x坐标为0和1。
+                y=[ci_data['Mean (0)'], ci_data['Mean (1)']], # y坐标为两组的均值。
+                yerr=[[ci_data['Mean (0)'] - ci_data['CI Lower (0)'], ci_data['Mean (1)'] - ci_data['CI Lower (1)']], # 误差线的下半部分长度。
+                      [ci_data['CI Upper (0)'] - ci_data['Mean (0)'], ci_data['CI Upper (1)'] - ci_data['Mean (1)']]], # 误差线的上半部分长度。
+                fmt='none', capsize=5, ecolor='black', elinewidth=2) # 设置误差线的样式。
+
+# 添加统计信息
+    p_value = t_test_df.loc[feature, 'p-value'] # 获取p值。
+    effect = effect_size_df.loc[feature, 'Cohen\'s D'] # 获取效应量。
+    sig = "***"if p_value < 0.001else"**"if p_value < 0.01else"*"if p_value < 0.05else"ns"# 根据p值确定显著性标记。
+
+    ax.annotate(f"p = {p_value:.4f}{sig}\nCohen's d = {effect:.2f}", # 创建注释文本。
+                xy=(0.5, 0.95), xycoords='axes fraction', # 将注释放在子图的顶部中央位置。
+                ha='center', va='top',
+                bbox=dict(boxstyle='round,pad=0.5', fc='yellow', alpha=0.3)) # 给注释添加一个半透明的黄色背景框。
+
+# 设置标题和标签
+    ax.set_title(f'{feature}', fontsize=14, fontweight='bold') # 设置子图标题。
+    ax.set_xlabel('') # 移除x轴标签。
+    ax.set_xticklabels(['No Diabetes', 'Diabetes']) # 设置x轴刻度标签。
+
+plt.suptitle('Statistical Comparison of Top Features', fontsize=18, fontweight='bold') # 设置总标题。
+plt.tight_layout() # 自动调整布局。
+plt.subplots_adjust(top=0.9) # 调整子图的顶部边距，为总标题留出空间。
+plt.savefig('statistical_comparison.png', dpi=300, bbox_inches='tight') # 保存图表。
+plt.show() # 显示图表。
+
+# 7. 相关性矩阵 - 添加显著性标记
+
+# 计算相关性矩阵
+corr_matrix = data[numeric_features + ['Diagnosis']].corr() # 再次计算相关性矩阵。
+
+# 计算p值矩阵
+p_matrix = pd.DataFrame(np.zeros_like(corr_matrix), # 创建一个与相关性矩阵同样大小的全零DataFrame，用于存储p值。
+                        index=corr_matrix.index,
+                        columns=corr_matrix.columns)
+
+# 填充p值矩阵
+for i, col1 inenumerate(p_matrix.columns): # 遍历所有列。
+for j, col2 inenumerate(p_matrix.columns): # 再次遍历所有列，形成列对。
+if i > j:  # 只计算下三角部分，避免重复计算。
+            corr, p = stats.pearsonr(data[col1], data[col2]) # 计算两个特征之间的皮尔逊相关系数和对应的p值。
+            p_matrix.loc[col1, col2] = p # 将p值存储在p值矩阵中。
+            p_matrix.loc[col2, col1] = p # 同样填充对称位置。
+
+# 生成带有显著性标记的相关性热图
+plt.figure(figsize=(14, 12)) # 创建新画布。
+mask = np.triu(np.ones_like(corr_matrix, dtype=bool)) # 创建上三角掩码。
+heatmap = sns.heatmap(corr_matrix, mask=mask, annot=True, fmt='.3f', cmap='RdBu_r', # 绘制热力图，annot=True显示相关系数值。
+                      square=True, linewidths=0.5, cbar_kws={"shrink": .8})
+
+# 添加显著性标记
+for i, col1 inenumerate(corr_matrix.columns): # 遍历行。
+for j, col2 inenumerate(corr_matrix.columns): # 遍历列。
+if i > j:  # 只处理下三角部分。
+            p = p_matrix.loc[col1, col2] # 获取p值。
+            sig = ""# 初始化显著性标记为空字符串。
+if p < 0.001: # 如果p值小于0.001。
+                sig = "***"# 标记为三颗星。
+elif p < 0.01: # 如果p值小于0.01。
+                sig = "**"# 标记为两颗星。
+elif p < 0.05: # 如果p值小于0.05。
+                sig = "*"# 标记为一颗星。
+
+if sig:  # 如果标记不为空（即统计上显著）。
+                heatmap.text(j + 0.25, i + 0.75, sig, ha='center', va='center', color='black', fontweight='bold') # 在热力图的对应单元格中添加星号标记。
+
+plt.title('Feature Correlation Heatmap with Significance Markers', fontsize=16, fontweight='bold', pad=20) # 设置标题。
+plt.xticks(rotation=45, ha='right') # 旋转x轴标签。
+plt.yticks(rotation=0) # 保持y轴标签不旋转。
+plt.tight_layout() # 自动调整布局。
+plt.savefig('correlation_significance_heatmap.png', dpi=300, bbox_inches='tight') # 保存图表。
+plt.show() # 显示图表。
+
+# 8. 总结统计分析结果
+
+# 组合所有统计结果
+stats_summary = pd.DataFrame(index=numeric_features) # 创建一个以特征为索引的空DataFrame。
+stats_summary['t-statistic'] = t_test_df['t-statistic'] # 添加t统计量列。
+stats_summary['p-value'] = t_test_df['p-value'] # 添加原始p值列。
+stats_summary['FDR p-value'] = t_test_df['FDR p-value'] # 添加FDR校正后的p值列。
+stats_summary['Effect Size (Cohen\'s d)'] = effect_size_df['Cohen\'s D'] # 添加效应量列。
+
+# 添加显著性判断
+stats_summary['Significant'] = stats_summary['FDR p-value'] < 0.05# 根据FDR校正后的p值，添加一个布尔列来表示是否显著。
+
+# 按显著性和效应量排序
+stats_summary = stats_summary.sort_values(by=['Significant', 'Effect Size (Cohen\'s d)'], # 首先按显著性（True在前），然后按效应量大小（降序）进行排序。
+                                          ascending=[False, False])
+
+print(stats_summary) # 打印最终的统计分析摘要表。
+
+# 结果导出
+stats_summary.to_csv('statistical_analysis_results.csv') # 将这个摘要表保存为CSV文件。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+train_test_split
+
+StandardScaler
+
+metrics
+
+BayesSearchCV
+
+
+
+
+PYTHON
+
+from sklearn.model_selection import train_test_split # 从scikit-learn导入用于分割数据集的函数。
+from sklearn.preprocessing import StandardScaler # 导入用于特征标准化的类。
+from sklearn.metrics import * # 导入scikit-learn.metrics模块下的所有函数，如accuracy_score, roc_auc_score, confusion_matrix等。
+from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier, ExtraTreesClassifier, \
+    AdaBoostClassifier # 导入多种集成学习模型：随机森林、梯度提升、极端随机树、AdaBoost。
+from sklearn.linear_model import LogisticRegression # 导入逻辑回归模型。
+from sklearn.svm import SVC # 导入支持向量机分类器。
+from sklearn.neighbors import KNeighborsClassifier # 导入K近邻分类器。
+from sklearn.tree import DecisionTreeClassifier # 导入决策树分类器。
+from sklearn.naive_bayes import GaussianNB # 导入高斯朴素贝叶斯分类器。
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis, QuadraticDiscriminantAnalysis # 导入线性和二次判别分析。
+from xgboost import XGBClassifier # 导入XGBoost分类器，一个非常高效和强大的梯度提升实现。
+from lightgbm import LGBMClassifier # 导入LightGBM分类器，另一个高效的梯度提升实现，尤其擅长处理大规模数据。
+from sklearn.calibration import calibration_curve, CalibratedClassifierCV # 导入用于模型校准的函数和类。
+from skopt import BayesSearchCV # 从scikit-optimize库导入贝叶斯优化搜索，用于高效地寻找最佳超参数。
+from skopt.space import Real, Integer # 从skopt.space导入定义搜索空间的类（实数和整数）。
+import seaborn as sns # 再次导入seaborn，确保在当前环境中可用。
+import matplotlib.pyplot as plt # 再次导入matplotlib.pyplot，确保在当前环境中可用。
+from numpy import interp # 从numpy导入interp函数，用于一维线性插值。
+from sklearn.metrics import auc as sklearn_auc # 从sklearn.metrics导入auc函数并重命名为sklearn_auc，以避免与自定义变量冲突。
+import warnings # 再次导入warnings模块。
+
+warnings.filterwarnings('ignore') # 再次设置忽略警告，确保后续代码块不受影响。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+PYTHON
+
+# ==================== 第三部分：数据分割与标准化 ====================
+
+print("-" * 50) # 打印分隔线。
+
+# 分离特征和目标变量
+X = data.drop('Diagnosis', axis=1) # 创建特征集X，丢弃'Diagnosis'列。axis=1表示按列操作。
+y = data['Diagnosis'] # 创建目标变量y，只包含'Diagnosis'列。
+
+
+
+
+
+# 首先分割出测试集(10%)
+# 核心代码：第一次分割，将整个数据集划分为 90% 的临时集和 10% 的测试集。
+X_temp, X_test, y_temp, y_test = train_test_split(
+    X, y, test_size=0.1, random_state=42, stratify=y
+) # stratify=y确保在分割出的数据集中，目标变量y的类别比例与原始数据集保持一致，这对于不平衡数据集至关重要。
+
+# 然后从剩余数据中分割训练集(70%)和验证集(20%)
+# 核心代码：第二次分割，将 90% 的临时集划分为训练集和验证集。
+X_train, X_val, y_train, y_val = train_test_split(
+    X_temp, y_temp, test_size=0.2222, random_state=42, stratify=y_temp # test_size=0.2222是因为0.2 / 0.9 ≈ 0.2222，这样验证集占原始数据的20%。
+)
+
+
+
+
+
+
+# 标准化特征
+# 核心代码：创建并应用标准化器。
+scaler = StandardScaler() # 创建一个StandardScaler对象。
+X_train_scaled = scaler.fit_transform(X_train) # 在训练数据上学习（fit）均值和标准差，并对其进行转换（transform）。
+X_val_scaled = scaler.transform(X_val) # 使用训练集学习到的参数来转换验证集数据。
+X_test_scaled = scaler.transform(X_test) # 使用训练集学习到的参数来转换测试集数据。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+PYTHON
+
+# ==================== 第四部分：模型训练、评估与比较 ====================
+
+print("-" * 50) # 打印分隔线。
+
+# 定义性能指标计算函数
+defcalculate_metrics(y_true, y_pred, y_proba): # 定义一个函数，输入真实标签、预测标签和预测概率。
+
+    tn, fp, fn, tp = confusion_matrix(y_true, y_pred).ravel() # 计算混淆矩阵并将其扁平化，得到TN, FP, FN, TP。
+
+    metrics = { # 创建一个字典来存储所有指标。
+'Sensitivity': tp / (tp + fn) if (tp + fn) > 0else0,  # 敏感性/召回率: TP / (TP + FN)
+'Specificity': tn / (tn + fp) if (tn + fp) > 0else0,  # 特异性: TN / (TN + FP)
+'Accuracy': (tp + tn) / (tp + tn + fp + fn),  # 准确率
+'PPV': tp / (tp + fp) if (tp + fp) > 0else0,  # 阳性预测值/精确率: TP / (TP + FP)
+'NPV': tn / (tn + fn) if (tn + fn) > 0else0,  # 阴性预测值: TN / (TN + FN)
+'F1': 2 * tp / (2 * tp + fp + fn) if (2 * tp + fp + fn) > 0else0,  # F1分数，精确率和召回率的调和平均值。
+"Youden's index": (tp / (tp + fn) + tn / (tn + fp) - 1) if (tp + fn) > 0and (tn + fp) > 0else0,  # 约登指数: 敏感性 + 特异性 - 1
+'AUC': roc_auc_score(y_true, y_proba) iflen(np.unique(y_true)) > 1else0# AUC值，基于预测概率计算。
+    }
+return metrics # 返回包含所有指标的字典。
+
+# 定义模型字典和贝叶斯优化参数空间
+# 核心代码：这是一个配置字典，定义了所有要测试的模型及其超参数搜索范围。
+models_config = {
+'Logistic Regression': {
+'model': LogisticRegression(random_state=42), # 模型实例
+'params': { # 超参数搜索空间
+'C': Real(0.01, 100, prior='log-uniform'), # 正则化强度的倒数，对数均匀分布
+'max_iter': Integer(100, 1000) # 最大迭代次数，整数范围
+        }
+    },
+'Random Forest': {
+'model': RandomForestClassifier(random_state=42),
+'params': {
+'n_estimators': Integer(50, 200), # 树的数量
+'max_depth': Integer(3, 20), # 树的最大深度
+'min_samples_split': Integer(2, 20), # 节点分裂所需的最小样本数
+'min_samples_leaf': Integer(1, 10) # 叶节点所需的最小样本数
+        }
+    },
+# ... 其他模型的配置与此类似，为每个模型定义了其关键的超参数和搜索范围 ...
+'Gradient Boosting': {
+'model': GradientBoostingClassifier(random_state=42),
+'params': {
+'n_estimators': Integer(50, 200),
+'max_depth': Integer(3, 10),
+'learning_rate': Real(0.01, 0.3, prior='log-uniform')
+        }
+    },
+'XGBoost': {
+'model': XGBClassifier(random_state=42, eval_metric='logloss'),
+'params': {
+'n_estimators': Integer(50, 200),
+'max_depth': Integer(3, 10),
+'learning_rate': Real(0.01, 0.3, prior='log-uniform'),
+'subsample': Real(0.6, 1.0)
+        }
+    },
+'LightGBM': {
+'model': LGBMClassifier(random_state=42, verbosity=-1),
+'params': {
+'n_estimators': Integer(50, 200),
+'max_depth': Integer(3, 10),
+'learning_rate': Real(0.01, 0.3, prior='log-uniform'),
+'num_leaves': Integer(10, 100)
+        }
+    },
+'SVM': {
+'model': SVC(random_state=42, probability=True),
+'params': {
+'C': Real(0.1, 100, prior='log-uniform'),
+'gamma': Real(0.001, 1, prior='log-uniform'),
+'kernel': ['rbf', 'linear'] # 核函数是分类变量
+        }
+    },
+'KNN': {
+'model': KNeighborsClassifier(),
+'params': {
+'n_neighbors': Integer(3, 20),
+'weights': ['uniform', 'distance'],
+'metric': ['euclidean', 'manhattan']
+        }
+    },
+'Decision Tree': {
+'model': DecisionTreeClassifier(random_state=42),
+'params': {
+'max_depth': Integer(3, 20),
+'min_samples_split': Integer(2, 20),
+'min_samples_leaf': Integer(1, 10)
+        }
+    },
+'Extra Trees': {
+'model': ExtraTreesClassifier(random_state=42),
+'params': {
+'n_estimators': Integer(50, 200),
+'max_depth': Integer(3, 20),
+'min_samples_split': Integer(2, 20)
+        }
+    },
+'AdaBoost': {
+'model': AdaBoostClassifier(random_state=42),
+'params': {
+'n_estimators': Integer(50, 200),
+'learning_rate': Real(0.01, 2, prior='log-uniform')
+        }
+    },
+'Naive Bayes': {
+'model': GaussianNB(),
+'params': {
+'var_smoothing': Real(1e-10, 1e-6, prior='log-uniform') # 方差平滑
+        }
+    },
+'LDA': {
+'model': LinearDiscriminantAnalysis(),
+'params': {
+'solver': ['lsqr'],  # 只使用支持shrinkage的求解器
+'shrinkage': Real(0.0, 1.0) # 收缩参数
+    }
+},
+'QDA': {
+'model': QuadraticDiscriminantAnalysis(),
+'params': {
+'reg_param': Real(0.0, 1.0) # 正则化参数
+        }
+    }
+}
+
+# 存储结果
+results = {} # 存储每个模型在验证集上的性能指标。
+best_models = {} # 存储每个模型优化后的最佳实例。
+
+
+
+# 核心代码：遍历所有模型配置，进行训练和优化。
+for name, config in models_config.items():
+
+
+try:
+# 贝叶斯优化
+        bayes_search = BayesSearchCV(
+            config['model'], # 待优化的模型。
+            config['params'], # 超参数搜索空间。
+            n_iter=30,  # 贝叶斯优化迭代次数，即尝试30组不同的超参数。
+            cv=3,  # 交叉验证折数，每次迭代时在训练集内部进行3折交叉验证。
+            scoring='roc_auc', # 优化的目标指标是AUC。
+            random_state=42, # 随机种子，保证结果可复现。
+            n_jobs=-1# 使用所有可用的CPU核心进行并行计算，加快速度。
+        )
+
+        bayes_search.fit(X_train_scaled, y_train) # 在标准化的训练集上执行贝叶斯搜索。
+        best_model = bayes_search.best_estimator_ # 获取优化后找到的最佳模型。
+
+# 验证集预测
+        y_val_pred = best_model.predict(X_val_scaled) # 使用最佳模型对验证集进行类别预测。
+        y_val_proba = best_model.predict_proba(X_val_scaled)[:, 1] # 获取验证集上属于正类（类别1）的预测概率。
+
+# 计算指标
+        metrics = calculate_metrics(y_val, y_val_pred, y_val_proba) # 调用函数计算所有性能指标。
+
+        results[name] = metrics # 将指标字典存入results。
+        best_models[name] = best_model # 将最佳模型实例存入best_models。
+
+
+
+except Exception as e: # 捕获可能发生的任何错误。
+
+continue# 跳过当前循环的剩余部分。
+
+# ==================== 结果展示 ====================
+
+print("-" * 50) # 打印分隔线。
+
+# 创建结果DataFrame
+results_df = pd.DataFrame(results).T # 将存储结果的字典转换为Pandas DataFrame，并转置，使模型名称成为行索引。
+results_df = results_df.round(4) # 将所有数值四舍五入到小数点后4位。
+results_df = results_df.sort_values('AUC', ascending=False) # 按AUC值降序排列，性能最好的模型在最上面。
+
+print(results_df) # 打印最终的性能比较表。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+PYTHON
+
+# ==================== 可视化部分 ====================
+
+
+# 1. 性能折线图
+plt.figure(figsize=(15, 10)) # 创建一个大的画布。
+metrics_to_plot = ['Sensitivity', 'Specificity', 'Accuracy', 'PPV', 'NPV', 'F1', "Youden's index"] # 定义要绘制的指标列表。
+
+for i, metric inenumerate(metrics_to_plot, 1): # 遍历指标列表。
+    plt.subplot(3, 3, i) # 在3x3的网格中创建子图。
+    sorted_results = results_df.sort_values(metric, ascending=False) # 对当前指标进行降序排序。
+    plt.plot(range(len(sorted_results)), sorted_results[metric], 'o-', linewidth=2, markersize=6) # 绘制折线图，x轴是模型排名，y轴是指标值。
+    plt.title(f'{metric} Performance', fontweight='bold') # 设置子图标题。
+    plt.xlabel('Model Rank') # 设置x轴标签。
+    plt.ylabel(metric) # 设置y轴标签。
+    plt.xticks(range(len(sorted_results)), sorted_results.index, rotation=45) # 设置x轴刻度为模型名称并旋转45度。
+    plt.grid(True, alpha=0.3) # 添加半透明网格。
+
+plt.tight_layout() # 自动调整布局，防止标签重叠。
+plt.savefig('performance_line_plots.png', dpi=300, bbox_inches='tight') # 保存图表。
+plt.show() # 显示图表。
+
+# 2. ROC曲线图
+plt.figure(figsize=(12, 10)) # 创建一个新画布。
+
+# 收集所有模型的ROC数据
+roc_data = {} # 创建一个字典来存储每个模型的ROC曲线数据。
+for name, model in best_models.items(): # 遍历所有优化后的模型。
+    y_proba = model.predict_proba(X_val_scaled)[:, 1] # 获取模型在验证集上的预测概率。
+    fpr, tpr, _ = roc_curve(y_val, y_proba) # 计算假正例率(FPR)和真正例率(TPR)。
+    roc_auc = sklearn_auc(fpr, tpr) # 计算ROC曲线下的面积(AUC)。
+    roc_data[name] = {'fpr': fpr, 'tpr': tpr, 'auc': roc_auc} # 存储数据。
+
+# 绘制ROC曲线+置信区间
+for name, data in roc_data.items(): # 遍历每个模型的数据。
+    plt.plot(data['fpr'], data['tpr'], label=f'{name} (AUC = {data["auc"]:.3f})') # 绘制ROC曲线，并在图例中显示AUC值。
+# 核心代码：绘制一个模拟的置信区间，直观表示曲线可能波动的范围。
+    plt.fill_between(data['fpr'], data['tpr'] - 0.05, data['tpr'] + 0.05, alpha=0.1) # 在曲线周围填充一个半透明区域。
+plt.plot([0, 1], [0, 1], 'k--', label='Random Guessing') # 绘制一条对角虚线，代表随机猜测的性能。
+plt.title('ROC Curves for All Models', fontweight='bold') # 设置标题。
+plt.xlabel('False Positive Rate') # 设置x轴标签。
+plt.ylabel('True Positive Rate') # 设置y轴标签。
+plt.legend(loc='lower right') # 在右下角显示图例。
+plt.grid(True, alpha=0.3) # 添加网格。
+plt.tight_layout() # 自动调整布局。
+plt.savefig('roc_curves.png', dpi=300, bbox_inches='tight') # 保存图表。
+plt.show() # 显示图表。
+
+# 3. AUC森林图
+plt.figure(figsize=(10, 8)) # 创建新画布。
+auc_values = results_df['AUC'].sort_values(ascending=True) # 获取所有模型的AUC值并升序排列（为了绘图时最好的在顶部）。
+y_pos = np.arange(len(auc_values)) # 创建y轴的位置。
+
+# 计算置信区间 (95% CI) - 这是一个简化的估算，实际应通过bootstrap等方法计算
+ci_lower = auc_values - 1.96 * (auc_values.std() / np.sqrt(len(auc_values))) # 估算置信区间下界。
+ci_upper = auc_values + 1.96 * (auc_values.std() / np.sqrt(len(auc_values))) # 估算置信区间上界。
+# 绘制森林图
+plt.barh(y_pos, auc_values, alpha=0.7, color='skyblue') # 绘制水平条形图作为基础。
+plt.errorbar(auc_values, y_pos, xerr=[auc_values - ci_lower, ci_upper - auc_values],
+             fmt='o', color='red', capsize=5) # 在条形图上叠加误差棒（置信区间）。
+
+plt.yticks(y_pos, auc_values.index) # 设置y轴刻度为模型名称。
+plt.xlabel('AUC Value') # 设置x轴标签。
+plt.title('AUC Forest Plot with Confidence Intervals', fontweight='bold') # 设置标题。
+plt.axvline(x=0.5, color='gray', linestyle='--', alpha=0.7) # 添加一条垂直线在x=0.5处，代表随机猜测水平。
+plt.grid(True, alpha=0.3) # 添加网格。
+
+# 添加数值标签
+for i, v inenumerate(auc_values): # 遍历每个AUC值。
+    plt.text(v + 0.01, i, f'{v:.3f}', va='center', fontweight='bold') # 在误差棒末端添加AUC数值。
+
+plt.tight_layout() # 自动调整布局。
+plt.savefig('auc_forest_plot.png', dpi=300, bbox_inches='tight') # 保存图表。
+plt.show() # 显示图表。
+
+# 4. 混淆矩阵图
+n_models = len(best_models) # 获取模型总数。
+n_cols = 5# 设置每行显示的子图数量。
+n_rows = (n_models + n_cols - 1) // n_cols # 计算所需的行数。
+
+fig, axes = plt.subplots(n_rows, n_cols, figsize=(20, 4 * n_rows)) # 创建子图网格。
+if n_rows == 1: # 处理只有一行的情况。
+    axes = axes.reshape(1, -1)
+axes = axes.flatten() # 将子图数组扁平化，方便遍历。
+
+for i, (name, model) inenumerate(best_models.items()): # 遍历所有最佳模型。
+if i >= len(axes): # 如果模型数量超过子图数量，则停止。
+break
+
+    y_pred = model.predict(X_val_scaled) # 获取预测标签。
+    cm = confusion_matrix(y_val, y_pred) # 计算混淆矩阵。
+# 核心代码：使用seaborn的热力图功能绘制混淆矩阵。
+    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', ax=axes[i], # annot=True在格内显示数字，fmt='d'表示整数格式。
+                xticklabels=['No Diabetes', 'Diabetes'], # 设置x轴标签。
+                yticklabels=['No Diabetes', 'Diabetes']) # 设置y轴标签。
+    axes[i].set_title(f'{name}', fontweight='bold') # 设置子图标题。
+    axes[i].set_xlabel('Predicted') # 设置x轴标签。
+    axes[i].set_ylabel('Actual') # 设置y轴标签。
+
+# 隐藏多余的子图
+for j inrange(len(best_models), len(axes)): # 遍历未使用的子图。
+    axes[j].set_visible(False) # 将其隐藏。
+
+plt.tight_layout() # 自动调整布局。
+plt.savefig('confusion_matrices.png', dpi=300, bbox_inches='tight') # 保存图表。
+plt.show() # 显示图表。
+
+# 5. 临床影响曲线
+defplot_clinical_impact_curve(y_true, y_proba, ax=None): # 定义一个绘制临床影响曲线的函数。
+
+    thresholds = np.linspace(0, 1, 100) # 创建100个从0到1的阈值。
+    impacts = [] # 存储每个阈值下的临床影响值。
+
+for threshold in thresholds: # 遍历所有阈值。
+        y_pred = (y_proba >= threshold).astype(int) # 根据阈值将预测概率转换为预测类别。
+        tp = np.sum((y_true == 1) & (y_pred == 1)) # 计算真阳性。
+        fp = np.sum((y_true == 0) & (y_pred == 1)) # 计算假阳性。
+        impact = tp - fp # 计算临床影响（净收益）。
+        impacts.append(impact) # 添加到列表中。
+
+if ax isNone: # 如果没有提供子图对象，则创建一个新的。
+        fig, ax = plt.subplots(figsize=(10, 6))
+
+    ax.plot(thresholds, impacts, label='Clinical Impact', color='orange') # 绘制曲线。
+    ax.axhline(0, color='gray', linestyle='--', linewidth=1) # 添加一条水平参考线。
+    ax.set_xlabel('Threshold') # 设置x轴标签。
+    ax.set_ylabel('Clinical Impact (TP - FP)') # 设置y轴标签。
+    ax.set_title('Clinical Impact Curve', fontweight='bold') # 设置标题。
+    ax.legend() # 显示图例。
+    ax.grid(True, alpha=0.3) # 添加网格。
+return ax # 返回子图对象。
+
+# 绘制临床影响曲线
+fig, axes = plt.subplots(n_rows, n_cols, figsize=(20, 4 * n_rows)) # 创建子图网格。
+if n_rows == 1:
+    axes = axes.reshape(1, -1)
+axes = axes.flatten() # 扁平化子图数组。
+for i, (name, model) inenumerate(best_models.items()): # 遍历所有模型。
+if i >= len(axes):
+break
+
+    y_proba = model.predict_proba(X_val_scaled)[:, 1] # 获取预测概率。
+    plot_clinical_impact_curve(y_val, y_proba, ax=axes[i]) # 在对应的子图上绘制临床影响曲线。
+    axes[i].set_title(f'{name}', fontweight='bold') # 设置子图标题为模型名称。
+# 隐藏多余的子图
+for j inrange(len(best_models), len(axes)):
+    axes[j].set_visible(False)
+
+plt.tight_layout() # 自动调整布局。
+plt.savefig('clinical_impact_curves.png', dpi=300, bbox_inches='tight') # 保存图表。
+plt.show() # 显示图表。
+
+
+# 6. 校准曲线
+fig, axes = plt.subplots(n_rows, n_cols, figsize=(20, 4 * n_rows)) # 创建子图网格。
+if n_rows == 1:
+    axes = axes.reshape(1, -1)
+axes = axes.flatten() # 扁平化子图数组。
+
+for i, (name, model) inenumerate(best_models.items()): # 遍历所有模型。
+if i >= len(axes):
+break
+
+    y_proba = model.predict_proba(X_val_scaled)[:, 1] # 获取预测概率。
+
+# 核心代码：计算校准曲线所需的数据点。
+    prob_true, prob_pred = calibration_curve(y_val, y_proba, n_bins=10) # y_val是真实标签，y_proba是预测概率，n_bins是将概率分成10个区间。
+
+    axes[i].plot([0, 1], [0, 1], 'k--', label='Perfect Calibration') # 绘制代表完美校准的对角线。
+    axes[i].plot(prob_pred, prob_true, 'o-', label=name) # 绘制模型的校准曲线。
+    axes[i].set_xlabel('Mean Predicted Probability') # 设置x轴标签：每个区间的平均预测概率。
+    axes[i].set_ylabel('Fraction of Positives') # 设置y轴标签：每个区间的真实正例比例。
+    axes[i].set_title(f'{name} Calibration', fontweight='bold') # 设置标题。
+    axes[i].legend() # 显示图例。
+    axes[i].grid(True, alpha=0.3) # 添加网格。
+
+# 隐藏多余的子图
+for j inrange(len(best_models), len(axes)):
+    axes[j].set_visible(False)
+
+plt.tight_layout() # 自动调整布局。
+plt.savefig('calibration_curves.png', dpi=300, bbox_inches='tight') # 保存图表。
+plt.show() # 显示图表。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+PYTHON
+
+# ==================== 最终测试集评估 ====================
+
+print("-" * 50) # 打印分隔线。
+
+# 核心代码：选择在验证集上性能最好的模型。
+best_model_name = results_df.index[0] # results_df已经按AUC降序排列，所以第一个模型的名字就是最佳模型的名字。
+best_model = best_models[best_model_name] # 从best_models字典中获取最佳模型的实例。
+
+
+
+# 测试集评估
+y_test_pred = best_model.predict(X_test_scaled) # 使用最佳模型对标准化的测试集进行类别预测。
+y_test_proba = best_model.predict_proba(X_test_scaled)[:, 1] # 获取在测试集上的预测概率。
+
+# 计算测试集指标
+test_metrics = calculate_metrics(y_test, y_test_pred, y_test_proba) # 调用函数计算在测试集上的所有性能指标。
+
+
+for metric, value in test_metrics.items(): # 遍历并打印所有测试集指标。
+print(f"  {metric}: {value:.4f}")
+
+print("\n" + "=" * 60) # 打印结束分隔线。
+
+print("=" * 60) # 打印结束分隔线。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+PYTHON
+
+import shap # 导入SHAP库，用于模型解释。
+import matplotlib.pyplot as plt # 导入matplotlib用于绘图。
+import numpy as np # 导入numpy用于数值计算。
+import pandas as pd # 导入pandas用于数据处理。
+import seaborn as sns # 导入seaborn用于高级可视化。
+import warnings # 导入warnings模块。
+
+warnings.filterwarnings('ignore') # 设置忽略所有警告信息。
+
+# ==================== LightGBM SHAP 可视化分析 ====================
+
+print("=" * 60) # 打印分隔线。
+
+# 获取LightGBM模型
+if'LightGBM'in best_models: # 检查之前训练的模型字典中是否存在'LightGBM'。
+lightgbm_model = best_models['LightGBM'] # 如果存在，获取这个已经优化好的模型实例。
+
+
+# 初始化SHAP解释器
+
+# 核心代码：为树模型创建一个解释器。它会分析模型的内部结构以便高效计算SHAP值。
+explainer = shap.TreeExplainer(lightgbm_model) # 传入训练好的LightGBM模型。
+
+# 计算SHAP值（使用验证集的子集以提高计算效率）
+sample_size = min(100, len(X_val_scaled))  # 定义样本大小，取100和验证集长度中的较小者。
+X_val_sample = X_val_scaled[:sample_size] # 从标准化的验证集中选取子集作为样本特征。
+y_val_sample = y_val.iloc[:sample_size] # 选取对应的样本标签。
+
+
+# 核心代码：计算SHAP值。这将为每个样本的每个特征生成一个SHAP值。
+shap_values = explainer.shap_values(X_val_sample) # 传入样本特征数据。
+
+# 如果是二分类，TreeExplainer会返回一个列表，包含两个数组（分别对应负类和正类的SHAP值）。
+ifisinstance(shap_values, list): # 检查shap_values是否是一个列表。
+shap_values = shap_values[1]  # 我们通常只关心对正类（类别1，即“患有糖尿病”）的预测贡献，所以选择第二个数组。
+
+
+
+# 获取特征名称
+feature_names = X.columns.tolist() # 从原始DataFrame X中获取特征名称列表，用于图表标签。
+
+
+
+
+
+
+
+
+
+
+
+
+PYTHON
+
+# ==================== 1. SHAP Summary Plot ====================
+
+plt.figure(figsize=(12, 8)) # 创建一个12x8英寸的画布。
+# 核心代码：生成SHAP摘要图。plot_type="bar"指定了条形图模式。
+shap.summary_plot(shap_values, X_val_sample, feature_names=feature_names, plot_type="bar", show=False)
+plt.title('LightGBM SHAP Summary Plot', fontsize=16, fontweight='bold', pad=20) # 设置图表标题。
+plt.tight_layout() # 自动调整布局。
+plt.savefig('lightgbm_shap_summary.png', dpi=300, bbox_inches='tight') # 保存图表。
+plt.show() # 显示图表。
+
+# ==================== 2. SHAP Bar Plot (特征重要性) ====================
+
+shap_importance = np.abs(shap_values).mean(0) # 手动计算每个特征SHAP值的平均绝对值。mean(0)表示按列（特征）计算均值。
+
+plt.figure(figsize=(10, 8)) # 创建一个10x8英寸的画布。
+# 使用兼容性更好的方式创建条形图
+features_sorted = np.argsort(shap_importance) # 获取按重要性排序后的特征索引（从小到大）。
+plt.barh( # 绘制水平条形图。
+[feature_names[i] for i in features_sorted], # y轴是排序后的特征名称。
+shap_importance[features_sorted], # x轴是对应的特征重要性值。
+color='skyblue'# 设置条形颜色。
+)
+plt.title('LightGBM SHAP Feature Importance', fontsize=16, fontweight='bold') # 设置标题。
+plt.xlabel('Mean |SHAP Value|') # 设置x轴标签，表示平均绝对SHAP值。
+plt.tight_layout() # 自动调整布局。
+plt.savefig('lightgbm_shap_bar.png', dpi=300, bbox_inches='tight') # 保存图表。
+plt.show() # 显示图表。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+PYTHON
+
+# ==================== 3. SHAP Beeswarm Plot ====================
+
+plt.figure(figsize=(12, 10)) # 创建画布。
+# 核心代码：生成Beeswarm图。需要将数据封装在shap.Explanation对象中。
+shap.plots.beeswarm(shap.Explanation(values=shap_values,
+base_values=np.zeros(len(shap_values)), # 基线值，通常为0。
+data=X_val_sample, # 原始特征值，用于着色。
+feature_names=feature_names), # 特征名称。
+max_display=20, # 最多显示20个最重要的特征。
+show=False) # 不立即显示，以便我们可以自定义标题等。
+plt.title('LightGBM SHAP Beeswarm Plot', fontsize=16, fontweight='bold', pad=20) # 设置标题。
+plt.tight_layout() # 自动调整布局。
+plt.savefig('lightgbm_shap_beeswarm.png', dpi=300, bbox_inches='tight') # 保存图表。
+plt.show() # 显示图表。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+PYTHON
+
+# ==================== 4. SHAP Waterfall Plot (Single Sample Explanation) ====================
+
+
+# 选择一些有代表性的样本进行解释
+sample_indices = [0, 1]  # 选择前两个样本进行解释。
+for i, idx inenumerate(sample_indices): # 遍历选定的样本索引。
+plt.figure(figsize=(10, 8)) # 为每个样本创建新画布。
+
+# 创建SHAP解释对象
+exp = shap.Explanation(values=shap_values[idx:idx + 1, :], # 当前样本的SHAP值。
+base_values=np.zeros(1), # 基线值。
+data=X_val_sample[idx:idx + 1, :], # 当前样本的特征值。
+feature_names=feature_names) # 特征名。
+
+# 绘制瀑布图
+# 核心代码：为单个样本的解释对象绘制瀑布图。
+shap.plots.waterfall(exp[0], max_display=10, show=False) # exp[0]获取第一个（也是唯一一个）样本的解释。
+
+# 添加标题和样本信息
+actual_class = "Diabetes"if y_val_sample.iloc[idx] == 1else"No Diabetes"# 获取真实标签。
+pred_prob = lightgbm_model.predict_proba(X_val_sample[idx:idx + 1, :])[0, 1] # 获取模型对该样本的预测概率。
+pred_class = "Diabetes"if pred_prob > 0.5else"No Diabetes"# 获取预测类别。
+
+plt.title(f'Sample #{idx + 1} SHAP Waterfall Plot\n'# 设置包含详细信息的标题。
+f'Actual Class: {actual_class}, Predicted Probability: {pred_prob:.4f}, Predicted Class: {pred_class}',
+fontsize=14, fontweight='bold', pad=20)
+
+plt.tight_layout() # 自动调整布局。
+plt.savefig(f'lightgbm_shap_waterfall_sample_{idx + 1}.png', dpi=300, bbox_inches='tight') # 保存图表。
+plt.show() # 显示图表。
+
+# ==================== 5. SHAP Dependence Plot ====================
+# ... (此部分在下一阶段讲解) ...
+
+# ==================== 6. SHAP Force Plot ====================
+
+
+# 为前5个样本生成Force Plot
+for i inrange(min(5, len(shap_values))): # 遍历前5个样本。
+plt.figure(figsize=(20, 3)) # Force Plot通常是水平的，所以画布较宽。
+
+# 获取base value (模型的平均预测输出)
+base_value = explainer.expected_value # 从解释器获取基线值。
+ifisinstance(base_value, list): # 如果是列表（二分类情况），取正类的基线值。
+base_value = base_value[1]
+
+# 核心代码：为单个样本绘制力图。
+shap.force_plot(
+base_value, # 传入基线值。
+np.round(shap_values[i], 2), # 传入当前样本的SHAP值（保留两位小数）。
+X_val_sample[i], # 传入当前样本的特征值。
+feature_names=feature_names, # 传入特征名。
+matplotlib=True, # 使用matplotlib后端进行绘图，以便保存。
+show=False# 不立即显示。
+)
+
+actual_label = "Diabetes"if y_val_sample.iloc[i] == 1else"No Diabetes"# 获取真实标签。
+pred_proba = lightgbm_model.predict_proba(X_val_sample[i].reshape(1, -1))[0, 1] # 获取预测概率。
+plt.title(f'SHAP Force Plot - Sample {i + 1} | Actual: {actual_label} | Pred Prob: {pred_proba:.3f}',
+fontweight='bold', fontsize=14, pad=20) # 设置标题。
+plt.tight_layout() # 自动调整布局。
+plt.savefig(f'lightgbm_shap_force_sample_{i + 1}.png', dpi=300, bbox_inches='tight') # 保存图表。
+plt.show() # 显示图表。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+PYTHON
+
+# ==================== 5. SHAP Dependence Plot ====================
+
+
+# 选择最重要的4个特征进行依赖图分析
+top_features_indices = np.argsort(-np.abs(shap_values).mean(0))[:4] # 获取最重要的4个特征的索引。
+top_features = [feature_names[i] for i in top_features_indices] # 获取对应的特征名称。
+
+fig, axes = plt.subplots(2, 2, figsize=(15, 12)) # 创建2x2的子图网格。
+axes = axes.flatten() # 扁平化子图数组。
+
+for i, feature_idx inenumerate(top_features_indices): # 遍历这4个特征。
+plt.sca(axes[i]) # 激活当前的子图。
+# 核心代码：绘制依赖图。
+shap.dependence_plot(
+feature_idx, # 要绘制的主特征的索引。
+shap_values, # 所有样本的SHAP值。
+X_val_sample, # 所有样本的特征值。
+feature_names=feature_names, # 特征名列表。
+ax=axes[i], # 指定在哪个子图上绘制。
+show=False# 不立即显示。
+)
+axes[i].set_title(f'SHAP Dependence: {feature_names[feature_idx]}',
+fontweight='bold', fontsize=12) # 设置子图标题。
+
+plt.tight_layout() # 自动调整布局。
+plt.savefig('lightgbm_shap_dependence.png', dpi=300, bbox_inches='tight') # 保存图表。
+plt.show() # 显示图表。
+
+# ... (Force Plot代码已在上一阶段讲解) ...
+
+# ==================== 7. SHAP Decision Plot ====================
+# ... (此部分在下一阶段讲解) ...
+
+# ==================== 8. SHAP Interaction Values ====================
+
+
+# 计算SHAP交互值（使用更小的样本以提高计算效率）
+interaction_sample_size = min(50, len(X_val_sample)) # 选择更小的样本量，因为交互值计算量巨大。
+X_interaction_sample = X_val_sample[:interaction_sample_size] # 获取样本。
+
+
+try:
+# 核心代码：计算SHAP交互值。
+shap_interaction_values = explainer.shap_interaction_values(X_interaction_sample) # 传入样本数据。
+
+# 如果是二分类，取正类的交互值
+ifisinstance(shap_interaction_values, list): # 检查返回类型。
+shap_interaction_values = shap_interaction_values[1] # 取正类的交互值。
+
+# 交互作用热力图
+plt.figure(figsize=(12, 10)) # 创建画布。
+interaction_matrix = np.abs(shap_interaction_values).mean(0) # 计算平均绝对交互值矩阵。
+
+# 只显示上三角矩阵（避免重复）
+mask = np.triu(np.ones_like(interaction_matrix, dtype=bool), k=1) # 创建一个上三角掩码。
+interaction_matrix_masked = np.where(mask, interaction_matrix, 0) # 应用掩码。
+
+sns.heatmap( # 使用seaborn绘制热力图。
+interaction_matrix_masked,
+xticklabels=feature_names, # 设置x轴标签。
+yticklabels=feature_names, # 设置y轴标签。
+annot=True, # 在格内显示数值。
+fmt='.3f', # 数值格式为3位小数。
+cmap='RdYlBu_r', # 设置颜色映射。
+square=True, # 设置单元格为正方形。
+linewidths=0.5# 设置网格线。
+)
+plt.title('LightGBM SHAP Feature Interaction Matrix', fontsize=16, fontweight='bold') # 设置标题。
+plt.xticks(rotation=45, ha='right') # 旋转x轴标签。
+plt.yticks(rotation=0) # 保持y轴标签不旋转。
+plt.tight_layout() # 自动调整布局。
+plt.savefig('lightgbm_shap_interaction_matrix.png', dpi=300, bbox_inches='tight') # 保存图表。
+plt.show() # 显示图表。
+
+except Exception as e: # 捕获可能的错误。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+PYTHON
+
+# ==================== 7. SHAP Decision Plot ====================
+
+
+try:
+plt.figure(figsize=(12, 8)) # 创建画布。
+# 选择前20个样本进行决策路径展示
+sample_indices = range(min(20, len(shap_values))) # 选择要展示的样本索引。
+
+# 获取base value
+base_value = explainer.expected_value # 获取基线值。
+ifisinstance(base_value, list):
+base_value = base_value[1]
+
+# 核心代码：绘制决策图。
+shap.decision_plot(
+base_value, # 传入基线值。
+shap_values[sample_indices], # 传入多个样本的SHAP值。
+X_val_sample[sample_indices], # 传入对应的特征值。
+feature_names=feature_names, # 传入特征名。
+show=False# 不立即显示。
+)
+plt.title('LightGBM SHAP Decision Plot', fontsize=16, fontweight='bold') # 设置标题。
+plt.tight_layout() # 自动调整布局。
+plt.savefig('lightgbm_shap_decision.png', dpi=300, bbox_inches='tight') # 保存图表。
+plt.show() # 显示图表。
+except Exception as e: # 捕获错误。
+
+
+
+# ... (Interaction Plot代码已在上一阶段讲解) ...
+
+# ==================== 9. SHAP Heatmap ====================
+
+
+plt.figure(figsize=(15, 8)) # 创建画布。
+
+# 按SHAP值的总和对样本进行排序，以便相似的样本聚在一起。
+shap_sum = shap_values.sum(1) # 计算每个样本所有SHAP值的和。
+sorted_indices = np.argsort(shap_sum) # 获取排序后的索引。
+
+# 选择排序后的前30个样本进行热力图展示
+n_samples_heatmap = min(30, len(sorted_indices)) # 定义样本数量。
+selected_indices = sorted_indices[-n_samples_heatmap:] # 选择SHAP总和最高的30个样本。
+
+shap_heatmap_data = shap_values[selected_indices] # 获取这些样本的SHAP值。
+
+# 创建热力图
+im = plt.imshow(shap_heatmap_data.T, cmap='RdBu_r', aspect='auto') # T表示转置，使特征在Y轴，样本在X轴。
+plt.colorbar(im, label='SHAP Value') # 添加颜色条。
+
+plt.yticks(range(len(feature_names)), feature_names) # 设置Y轴标签为特征名。
+plt.xlabel('Sample Index') # 设置X轴标签。
+plt.ylabel('Features') # 设置Y轴标签。
+plt.title('LightGBM SHAP Values Heatmap', fontsize=16, fontweight='bold') # 设置标题。
+
+# 添加实际标签信息
+actual_labels = y_val_sample.iloc[selected_indices] # 获取这些样本的真实标签。
+for i, label inenumerate(actual_labels): # 遍历标签。
+color = 'red'if label == 1else'blue'# 根据标签确定颜色。
+plt.axvline(x=i, color=color, alpha=0.3, linewidth=2) # 在每个样本位置绘制一条垂直线代表其真实类别。
+
+# 添加图例
+from matplotlib.patches import Patch # 导入Patch用于创建自定义图例。
+legend_elements = [Patch(facecolor='red', alpha=0.3, label='Diabetes'),
+Patch(facecolor='blue', alpha=0.3, label='No Diabetes')]
+plt.legend(handles=legend_elements, loc='upper right') # 显示图例。
+
+plt.tight_layout() # 自动调整布局。
+plt.savefig('lightgbm_shap_heatmap.png', dpi=300, bbox_inches='tight') # 保存图表。
+plt.show() # 显示图表。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+PYTHON
+
+# ==================== 10. 顶级特征分析 ====================
+
+
+# 选择最重要的特征进行详细分析
+top_feature_idx = np.argmax(np.abs(shap_values).mean(0)) # 找到平均绝对SHAP值最大的特征的索引。
+top_feature_name = feature_names[top_feature_idx] # 获取其名称。
+
+fig, axes = plt.subplots(2, 2, figsize=(15, 12)) # 创建2x2子图网格。
+
+# a. 最重要特征与SHAP值的关系
+plt.sca(axes[0, 0]) # 激活左上角子图。
+sns.regplot( # 使用seaborn绘制散点图和回归线。
+x=X_val_sample[:, top_feature_idx], # x轴是特征值。
+y=shap_values[:, top_feature_idx], # y轴是SHAP值。
+scatter_kws={'alpha': 0.5, 's': 50},
+line_kws={'color': 'red'}
+)
+plt.xlabel(top_feature_name) # 设置x轴标签。
+plt.ylabel('SHAP Value') # 设置y轴标签。
+plt.title(f'SHAP Values vs {top_feature_name}', fontweight='bold') # 设置标题。
+
+# b. 按类别统计分布
+plt.sca(axes[0, 1]) # 激活右上角子图。
+for label, color in [(0, 'blue'), (1, 'red')]: # 遍历两个类别。
+mask = y_val_sample == label # 创建掩码以选择特定类别的样本。
+label_name = 'No Diabetes'if label == 0else'Diabetes'
+if np.any(mask): # 确保该类别有样本。
+sns.kdeplot( # 绘制核密度估计图。
+X_val_sample[mask, top_feature_idx],
+color=color,
+label=label_name
+)
+plt.xlabel(top_feature_name) # 设置x轴标签。
+plt.ylabel('Density') # 设置y轴标签。
+plt.title(f'{top_feature_name} Distribution by Actual Class', fontweight='bold') # 设置标题。
+plt.legend() # 显示图例。
+
+# c. 特征与预测概率关系
+plt.sca(axes[1, 0]) # 激活左下角子图。
+probs = lightgbm_model.predict_proba(X_val_sample)[:, 1] # 获取所有样本的预测概率。
+plt.scatter(X_val_sample[:, top_feature_idx], probs, alpha=0.7, s=50) # 绘制散点图。
+plt.xlabel(top_feature_name) # 设置x轴标签。
+plt.ylabel('Predicted Probability') # 设置y轴标签。
+plt.title(f'Predicted Probability vs {top_feature_name}', fontweight='bold') # 设置标题。
+
+# d. 箱线图对比
+plt.sca(axes[1, 1]) # 激活右下角子图。
+feature_data = pd.DataFrame({ # 创建一个临时DataFrame以便用seaborn绘图。
+'Value': X_val_sample[:, top_feature_idx],
+'Class': ['Diabetes'if l == 1else'No Diabetes'for l in y_val_sample]
+})
+sns.boxplot(x='Class', y='Value', data=feature_data) # 绘制箱线图。
+plt.ylabel(top_feature_name) # 设置y轴标签。
+plt.title(f'{top_feature_name} by Class', fontweight='bold') # 设置标题。
+
+plt.tight_layout() # 自动调整布局。
+plt.savefig('lightgbm_top_feature_analysis.png', dpi=300, bbox_inches='tight') # 保存图表。
+plt.show() # 显示图表。
+
+# ==================== 11. 特征重要性对比 ====================
+
+
+# 获取LightGBM内置特征重要性
+lightgbm_importance = lightgbm_model.feature_importances_ # 从模型中直接获取。
+
+# 计算SHAP特征重要性 (已在前面计算过)
+shap_importance = np.abs(shap_values).mean(0)
+
+# 创建对比DataFrame
+importance_df = pd.DataFrame({
+'Feature': feature_names,
+'LightGBM_Importance': lightgbm_importance,
+'SHAP_Importance': shap_importance
+})
+
+# 归一化重要性分数，使其在[0, 1]范围内，方便比较。
+importance_df['LightGBM_Normalized'] = importance_df['LightGBM_Importance'] / importance_df[
+'LightGBM_Importance'].max()
+importance_df['SHAP_Normalized'] = importance_df['SHAP_Importance'] / importance_df['SHAP_Importance'].max()
+
+# 按SHAP重要性排序
+importance_df = importance_df.sort_values('SHAP_Normalized', ascending=True)
+
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 8)) # 创建1行2列的子图。
+
+# 左图：对比条形图
+y_pos = np.arange(len(importance_df)) # 创建y轴位置。
+ax1.barh(y_pos - 0.2, importance_df['LightGBM_Normalized'], 0.4,
+label='LightGBM Importance', alpha=0.8, color='skyblue')
+ax1.barh(y_pos + 0.2, importance_df['SHAP_Normalized'], 0.4,
+label='SHAP Importance', alpha=0.8, color='lightcoral')
+
+ax1.set_yticks(y_pos) # 设置y轴刻度。
+ax1.set_yticklabels(importance_df['Feature']) # 设置y轴标签。
+ax1.set_xlabel('Normalized Importance') # 设置x轴标签。
+ax1.set_title('Feature Importance Comparison', fontweight='bold') # 设置标题。
+ax1.legend() # 显示图例。
+ax1.grid(True, alpha=0.3) # 添加网格。
+
+# 右图：散点图显示相关性
+ax2.scatter(importance_df['LightGBM_Normalized'], importance_df['SHAP_Normalized'],
+alpha=0.7, s=80, color='green')
+
+# 添加特征名称标签
+for i, row in importance_df.iterrows():
+ax2.annotate(row['Feature'],
+(row['LightGBM_Normalized'], row['SHAP_Normalized']),
+xytext=(5, 5), textcoords='offset points',
+fontsize=8, alpha=0.7)
+
+ax2.set_xlabel('LightGBM Normalized Importance') # 设置x轴标签。
+ax2.set_ylabel('SHAP Normalized Importance') # 设置y轴标签。
+ax2.set_title('Importance Correlation', fontweight='bold') # 设置标题。
+ax2.grid(True, alpha=0.3) # 添加网格。
+
+# 添加对角线
+max_val = max(importance_df['LightGBM_Normalized'].max(),
+importance_df['SHAP_Normalized'].max())
+ax2.plot([0, max_val], [0, max_val], 'r--', alpha=0.5, label='Perfect Correlation')
+ax2.legend() # 显示图例。
+
+plt.tight_layout() # 自动调整布局。
+plt.savefig('lightgbm_importance_comparison.png', dpi=300, bbox_inches='tight') # 保存图表。
+plt.show() # 显示图表。
+
+print("\n" + "=" * 60) # 打印结束分隔线。
+
+print("=" * 60)
+
+shap_files = [
+'lightgbm_shap_summary.png',
+'lightgbm_shap_bar.png',
+'lightgbm_shap_beeswarm.png',
+'lightgbm_shap_waterfall.png',
+'lightgbm_shap_dependence.png',
+'lightgbm_shap_force_sample_*.png',
+'lightgbm_shap_decision.png',
+'lightgbm_shap_interaction_matrix.png',
+'lightgbm_shap_heatmap.png',
+'lightgbm_top_feature_analysis.png',
+'lightgbm_importance_comparison.png'
+]
+for file in shap_files:
+print(f"  ✅ {file}") # 逐个打印已生成的文件名。
+
+else: # 如果LightGBM模型未成功训练。
